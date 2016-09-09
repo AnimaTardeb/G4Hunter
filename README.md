@@ -35,7 +35,7 @@ python G4Hunter.py -i <inputfile> -o <outputrepository> -w <window> -s <score th
 ------------
 G4-Hunter_2012_2015
 
-The best way to get help regarding to email the mailing list:
+The best way to get help regarding G4-Hunter is to email:
 
 bedrat.amina@gmail.com
 
