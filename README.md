@@ -1,5 +1,7 @@
 # G4-hunter
-G4-Hunter_2013_2015
+
+ ([Re-evaluation of G-quadruplex propensity with G4Hunter](http://nar.oxfordjournals.org/content/early/2016/01/19/nar.gkw006.full.pdf+html))
+ ([G4-Hunter : un nouvel algorithme pour la prédiction des G-quadruplexes](http://www.theses.fr/2015BORD0197))
 
 ##Requirements & Obtaining ##
 ------------
@@ -26,4 +28,11 @@ python G4Hunter.py -i <inputfile> -o <outputrepository> -w <window> -s <score th
 ```
  
 
+
+## Who do I talk to? ##
+------------
+G4-Hunter_2012_2015
+The best way to get help regarding to email the mailing list:
+bedrat.amina@gmail.com
+jean-louis.mergny@inserm.fr 
 
