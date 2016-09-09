@@ -1,6 +1,8 @@
 # G4-hunter
 
  ([Re-evaluation of G-quadruplex propensity with G4Hunter](http://nar.oxfordjournals.org/content/early/2016/01/19/nar.gkw006.full.pdf+html))
+ 
+ 
  ([G4-Hunter : un nouvel algorithme pour la prédiction des G-quadruplexes](http://www.theses.fr/2015BORD0197))
 
 ##Requirements & Obtaining ##
