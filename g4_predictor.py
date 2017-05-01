@@ -52,39 +52,39 @@ def ScoreSeq(seq, winStart=0, winEnd=-1):
     # calculate the total score for a window in the supplied sequence. 
     # Default is window=sequence. If seq is larger, leading and trailing nucleotides are 
     # used to adjust the score for the window if they extend a run.
-    priorGcount = priorCcount = 0
+    priorGcount = priorCcount = GbeforeWindow = CbeforeWindow = score = 0
     if winStart > 0:   # there are leading nucleotides. Increment length of run
         i = winStart - 1
         if seq[winStart] == "G":
-            while i >= 0 and seq[i] == "G" and priorGcount < 4:
-                priorGcount += 1
+            while i >= 0 and seq[i] == "G" and GbeforeWindow < 4:
+                GbeforeWindow += 1
                 i -= 1
         elif seq[winStart] == "C":
-            while i >= 0 and seq[i] == "C" and priorCcount < 4:
-                priorCcount += 1
+            while i >= 0 and seq[i] == "C" and CbeforeWindow < 4:
+                CbeforeWindow += 1
                 i -= 1
-    score = 0 - priorGcount - priorCcount  
     # this corrects for the fact that in the main algorithm the prior counts are used to 
     # adjust score for whole run, not just nucleotide under consideration
 
     for i in range(winStart, winEnd):
         if seq[i] == "G":
-            if priorGcount < 4:
-                score += priorGcount*2 + 1
+            if priorGcount + GbeforeWindow < 4:
+                score += priorGcount*2 + 1 + GbeforeWindow
                 priorGcount += 1
             else:   # if run reaches GGGG, each subsequent G adds 4 regardless of number
                 score += 4
             priorCcount = 0
+            CbeforeWindow = 0 # any C run is terminated
         elif seq[i] == "C":
-            if priorCcount < 4:
-                score -= priorCcount*2 + 1
+            if priorCcount + CbeforeWindow < 4:
+                score -= priorCcount*2 + 1 + CbeforeWindow
                 priorCcount += 1
             else:   # if run reaches CCCC, each subsequent C subtracts 4 regardless of number
                 score -= 4
             priorGcount = 0
+            GbeforeWindow = 0 # any G run is terminated
         else:    # nucleotide is A, T or ambiguous: no change to score, any run is terminated
-            priorGcount = 0
-            priorCcount = 0
+            priorGcount = priorCcount = GbeforeWindow = CbeforeWindow = 0
     
     if winEnd < len(seq):  # there are trailing nucleotides. Look ahead to adjust score
         i = winEnd
