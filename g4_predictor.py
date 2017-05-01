@@ -27,19 +27,16 @@ start	end	length
     0	  1	     1
 
 Two decisions that may need changing:
-	1. contrary to Bedrat-Lacroix-Mergny algorithm, fixed-width window scores are not 
-	adjusted for terminal runs that extend outside the window. For example, a final 
-	single G adds 1 to the score, regardless of how many Gs may follow the window.
-	This can give a difference in scores for a window, to a maximum difference of 
-	8/Window_width. Worst case example: if window GGA...TGG was flanked by 2 more Gs at 
-	each end, the four initial and final Gs in the window score 2 each in this algorithm, 
-	but 4 each in the original algorithm, giving a total difference of 8.
-	
-	2. A merged region of adjacent windows has the score for the region calculated, but 
+	1. A merged region of adjacent windows has the score for the region calculated, but 
 	is not filtered by the final score. It is possible a number of windows with 
 	scores above threshold may combine to a region with mean score below threshold, which
 	would still be written to the output file. This is same as Bedrat-Lacroix-Mergny 
 	output, but may be undesirable.
+	
+	2. Score is recalculated for each single-nucleotide advance of the window. 
+	It would probably be more efficient to calculate the score for the first window, then 
+	add and subtract scores for just the first and last nucleotides as the window is 
+	advanced.
 	 
 """
 
@@ -49,11 +46,28 @@ import os
 from Bio import SeqIO
 from Bio.Seq import Seq
 
-def ScoreSeq(seq):
-    score = 0
-    priorGcount = 0
-    priorCcount = 0
-    for i in range(len(seq)):
+def ScoreSeq(seq, winStart=0, winEnd=-1):
+    if winEnd < 0:
+        winEnd = len(seq)
+    # calculate the total score for a window in the supplied sequence. 
+    # Default is window=sequence. If seq is larger, leading and trailing nucleotides are 
+    # used to adjust the score for the window if they extend a run.
+    priorGcount = priorCcount = 0
+    if winStart > 0:   # there are leading nucleotides. Increment length of run
+        i = winStart - 1
+        if seq[winStart] == "G":
+            while i >= 0 and seq[i] == "G" and priorGcount < 4:
+                priorGcount += 1
+                i -= 1
+        elif seq[winStart] == "C":
+            while i >= 0 and seq[i] == "C" and priorCcount < 4:
+                priorCcount += 1
+                i -= 1
+    score = 0 - priorGcount - priorCcount  
+    # this corrects for the fact that in the main algorithm the prior counts are used to 
+    # adjust score for whole run, not just nucleotide under consideration
+
+    for i in range(winStart, winEnd):
         if seq[i] == "G":
             if priorGcount < 4:
                 score += priorGcount*2 + 1
@@ -71,7 +85,22 @@ def ScoreSeq(seq):
         else:    # nucleotide is A, T or ambiguous: no change to score, any run is terminated
             priorGcount = 0
             priorCcount = 0
-    meanScore = float(score) / len(seq)
+    
+    if winEnd < len(seq):  # there are trailing nucleotides. Look ahead to adjust score
+        i = winEnd
+        if seq[winEnd - 1] == "G":
+            runlength = priorGcount
+            while i < len(seq) and seq[i] == "G" and runlength < 4:
+                score += priorGcount
+                runlength += 1
+                i += 1
+        if seq[winEnd - 1] == "C":
+            runlength = priorCcount
+            while i < len(seq) and seq[i] == "C" and runlength < 4:
+                score -= priorCcount
+                runlength += 1
+                i += 1
+    meanScore = float(score) / (winEnd - winStart)
     return meanScore
 
 
@@ -89,18 +118,20 @@ def G4predictor(inFasta, out_win_file, out_region_file, win_width, thresh):
         predG4seq = ""
         
         # Slide window along sequence, advance 1 nucleotide each loop:
-        for i in range(0, len(seq_curr) - win_width + 1):
+        for i in range(len(seq_curr) - win_width + 1):
             win_curr = seq_curr[i : i + win_width]
-            score_curr = ScoreSeq(win_curr)
+            # where possible calculate score using 3 leading and 3 trailing bases, to get full value for bases in runs
+            extended_win = seq_curr.seq[max(0, i-3) : min(i + win_width +3, len(seq_curr)) ]
+            score_curr = ScoreSeq(extended_win, min(3, i), min(win_width+3, len(extended_win)))
             if abs(score_curr) > thresh :
-                out_win_file.write('%i\t%i\t%s\t%i\t%.2f\n'.format( 
+                out_win_file.write('{0}\t{1}\t{2}\t{3}\t{4:.2f}\n'.format( 
                     i, i+win_width, win_curr.seq, win_width, score_curr))
                 if i > predG4end:
                     # start of new predicted G4 region : write any previous region to file
                     if G4predCount == 0:
                         out_region_file.write("Start\tEnd\tSequence\tLength\tScore\tNumber\n")
                     else:
-                        out_region_file.write('%i\t%i\t%s\t%i\t%.2f\t%i\n'.format(
+                        out_region_file.write('{0}\t{1}\t{2}\t{3}\t{4:.2f}\t{5}\n'.format(
                            predG4start, predG4end, predG4seq, 
                             len(predG4seq), ScoreSeq(predG4seq), G4predCount) )
                     G4predCount += 1
@@ -145,7 +176,7 @@ def G4predictor(inFasta, out_win_file, out_region_file, win_width, thresh):
                         predG4end += 1
             predG4seq = predG4seq.rstrip("AT")
             predG4end = predG4start + len(predG4seq)
-            out_region_file.write('%i\t%i\t%s\t%i\t%.2f\t%i\n'.format(
+            out_region_file.write('{0}\t{1}\t{2}\t{3}\t{4:.2f}\t{5}\n'.format(
                     predG4start, predG4end, predG4seq, len(predG4seq), 
                      ScoreSeq(predG4seq), G4predCount) )
         regionCount += G4predCount
