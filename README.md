@@ -1,4 +1,4 @@
-# G4-hunter
+# G4Hunter
 
  ([Re-evaluation of G-quadruplex propensity with G4Hunter](http://nar.oxfordjournals.org/content/early/2016/01/19/nar.gkw006.full.pdf+html))
  
@@ -33,7 +33,7 @@ python G4Hunter.py -i <inputfile> -o <outputrepository> -w <window> -s <score th
 
 ## Who do I talk to? ##
 ------------
-G4-Hunter_2012_2015
+G4Hunter_2012_2015
 
 The best way to get help regarding G4-Hunter is to email:
 
