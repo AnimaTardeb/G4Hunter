@@ -5,7 +5,7 @@
  
  ([G4-Hunter : un nouvel algorithme pour la prédiction des G-quadruplexes](http://www.theses.fr/2015BORD0197))
 
-##Requirements & Obtaining ##
+Requirements & Obtaining
 ------------
 
 * Python 2.7 is recommended. 
