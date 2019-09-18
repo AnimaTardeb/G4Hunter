@@ -48,7 +48,7 @@ def main(argv):
           print  '\033[1m' +'\n\t  Welcome To G4Hunter :'+'\033[0;0m'
           print  '\033[1m' +'\t ----------------------'+'\033[0;0m'
 
-          print 'G4Hunter takes into account G-richness and G-skewness of a given sequence and gives a quadruplex propensity score as output.'
+          print '\n G4Hunter takes into account G-richness and G-skewness of a given sequence and gives a quadruplex propensity score as output.'
           print 'To run G4Hunter use the commande line: \n'
           print  '\033[1m' +'python G4Hunter.py -i <inputfile> -o <outputrepository> -w <window> -s <score threshold>\n'+'\033[0;0m'
           sys.exit()
@@ -124,13 +124,16 @@ class Soft(object):
                         liste.append(4)
                         item=item+1
         
-            elif (item < len(line) and (line[item]=="T" or line[item]=="A"  or line[item]=="t" or line[item]=="a" or line[item]=="U"or line[item]=="u" or
-                                         line[item]=="-" or line[item]=="N" or line[item]=="_" or line[item]=="Y" 
-                                         or line[item]=="W" or line[item]=="R" or 
-                                        line[item]=="K" or line[item]=="M"or line[item]=="S" or line[item]=="B"
-                                        or line[item]=="V"or line[item]=="D"or line[item]=="H"or line[item]=="N")):
-                liste.append(0)
-                item=item+1
+            #elif (item < len(line) and (line[item]=="T" or line[item]=="A"  or line[item]=="t" or line[item]=="a" or line[item]=="U"or line[item]=="u" or
+            #line[item]=="-" or line[item]=="N" or line[item]=="_" or line[item]=="Y"
+            #                            or line[item]=="W" or line[item]=="R" or
+            #                           line[item]=="K" or line[item]=="M"or #line[item]=="S" or line[item]=="B"
+            #                       or line[item]=="V"or line[item]=="D"or line[item]=="H"or line[item]=="N")):
+            #   liste.append(0)
+            #   item=item+1
+            elif (item < len(line) and line[item]!="G" and line[item]!="g" and line[item]!= "C" and line[item]!="c" ):
+                        liste.append(0)
+                        item=item+1
                 
             elif(item < len(line) and (line[item]=="C" or line[item]=="c")):
                 liste.append(-1)
@@ -161,9 +164,11 @@ class Soft(object):
     def CalScore(self,liste, k):
         Score_Liste=[]
         #calcule de la moynne des scores pour toutes les sequences - les derniers k bases
-        for i in range (len (liste)-k):
+        for i in range (len (liste)-(k-1)):
+            #print (len(liste)), i, k
             j,Sum=0,0
             while (j<k):
+                #print j, i
                 Sum=Sum+liste[i]
                 j=j+1
                 i=i+1
@@ -173,9 +178,7 @@ class Soft(object):
     
     ###################################################
     ###################################################
-
-
-    def plot2(self,liste, repert):
+    def plot2(self,liste, repert, i):
         # make a little extra space between the subplots
         plt.subplots_adjust(wspace=1.0)
         dt = 1
@@ -187,7 +190,7 @@ class Soft(object):
         plt.xlabel('Position (ntS)')
         plt.ylabel('Score')
         plt.grid(True)
-        figure.savefig(repert+'Score_plot.pdf', dpi=figure.dpi)
+        figure.savefig(repert+'Score_plot_'+i+'.pdf', dpi=figure.dpi)
          
     """ 
     ###################################################
@@ -209,7 +212,7 @@ class Soft(object):
         i,k,I=0,0,0
         a=b=LISTE[i]
         MSCORE=[]
-        SEQ=header+"\nStart\tEnd\tSequence\tLength\tScore\tNBR\n"
+        SEQ=">"+header+"\nStart\tEnd\tSequence\tLength\tScore\tNBR\n"
         fileout.write(SEQ)
         if (len(LISTE)>1):
             c=LISTE[i+1]
@@ -257,26 +260,40 @@ class Soft(object):
 
 
 if __name__ == "__main__":
-    inputfile, outputfile , window, score = main(sys.argv[1:])
-    print window
+    try:
+        inputfile, outputfile , window, score = main(sys.argv[1:])
+        fname=inputfile.split("/")[-1]
+        name=fname.split(".")
+
+    except ValueError:
+        print '\033[1m' +"\n \t Oops! invalide parameters  \n" +'\033[0;0m'
+        print "--------------------------------------------------------------------\n"
+        sys.exit()
+    except UnboundLocalError:
+        print '\033[1m' +"\n \t Oops! invalide parameters  \n" +'\033[0;0m'
+        print "--------------------------------------------------------------------\n"
+        sys.exit()
+
     OPF= os.listdir(outputfile)
     flag=False
     for dir in OPF:
-        if dir== "Results":
+        DIR="Results_"+str(name[0])
+        if dir== DIR:
+            print "true",DIR
             flag=True
     if flag==True:
-        shutil.rmtree(outputfile+"/Results/")
-        os.makedirs(outputfile+"/Results/", mode=0777)        #
+        shutil.rmtree(outputfile+"/"+DIR+"/")
+        os.makedirs(outputfile+"/"+DIR+"/", mode=0777)        #
         print '\033[1m' +"\n \t Re-evaluation of G-quadruplex propensity with G4Hunter " +'\033[0;0m'
         print "\n#####################################"
         print "#    New Results directory Created  #"
         print "#####################################\n"
     else:
-        os.makedirs(outputfile+"/Results/", mode=0777)        
+        os.makedirs(outputfile+"/"+DIR+"/", mode=0777)        #
         print "\n########################################################################"
         print "#                            Results directory Created                 #"
         print "########################################################################\n"
-
+    
     #================================================================
     plot=[]
     fname=inputfile.split("/")[-1]
@@ -285,8 +302,8 @@ if __name__ == "__main__":
     print "\n Input file:", '\033[1m' + filefasta[0]+'\033[0;0m'
     #repertoire des fichiers de sortie
 
-    Res1file= open (outputfile +"/Results/"+filefasta[0]+"-"+ str(window)+"-nts", "w")
-    Res2file= open (outputfile +"/Results/"+filefasta[0]+"-Merged", "w")
+    Res1file= open (outputfile +"/"+DIR+"/"+filefasta[0]+"-W"+ str(window)+"-S"+str(score)+".txt", "w")
+    Res2file= open (outputfile +"/"+DIR+"/"+filefasta[0]+"-Merged.txt", "w")
     #=========================================
     
     startTime = time.time()
@@ -298,13 +315,28 @@ if __name__ == "__main__":
         G4Seq=soft1.GetG4(DNASeq[i],Res1file, ScoreListe[i], float(score), int(window), HeaderListe[i], len(NumListe[i]))
         if (len(G4Seq)>0):
             MSCORE=soft1.WriteSeq(DNASeq[i],Res2file,ScoreListe[i], G4Seq, HeaderListe[i], int(window), len(NumListe[i]))
-        plot.append(MSCORE)
-    soft1.plot2(ScoreListe[0], outputfile +"/Results/")
+    #plot.append(MSCORE)
+
+    malist, alllist=[], []
+    for jj in range (len(ScoreListe[0])):
+        cc, mean=0, 0
+        for kk in range(len(ScoreListe)):
+            cc+=ScoreListe[kk][jj]
+        mean=cc/len(ScoreListe)
+        alllist.append(mean)
+        if abs(mean) >=score :
+            malist.append(mean)
+        else:
+            malist.append(0)
+
+    #soft1.plot2(ScoreListe[0], outputfile +"/Results/")
+    soft1.plot2(malist, outputfile +"/"+DIR+"/", "sc")
+    soft1.plot2(alllist, outputfile +"/"+DIR+"/", "all")
     filein.close()
     fin=time.time()
 
     print "\n Results files and Score Figure are created in:   "#,fin-startTime, "secondes"
-    print '\033[1m' + outputfile,"/Results/ \n "+'\033[0;0m'
+    print '\033[1m' + outputfile,"/",DIR,"/","\n "+'\033[0;0m'
 
 
     Res1file.close()
