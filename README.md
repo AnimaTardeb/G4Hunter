@@ -9,6 +9,7 @@ Requirements & Obtaining
 ------------
 
 * Python 2.7 is recommended. 
+* Biopython.
 * Matplotlib ([For installation see ](http://matplotlib.org/users/installing.html))
 * Numpy ([For installation see](http://docs.scipy.org/doc/numpy-1.10.1/user/install.html))
 ```
