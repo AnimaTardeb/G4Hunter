@@ -264,7 +264,8 @@ if __name__ == "__main__":
         inputfile, outputfile , window, score = main(sys.argv[1:])
         fname=inputfile.split("/")[-1]
         name=fname.split(".")
-
+    #DIR="Results_"+str(name[0])
+    #print DIR
     except ValueError:
         print '\033[1m' +"\n \t Oops! invalide parameters  \n" +'\033[0;0m'
         print "--------------------------------------------------------------------\n"
@@ -275,12 +276,16 @@ if __name__ == "__main__":
         sys.exit()
 
     OPF= os.listdir(outputfile)
+
     flag=False
-    for dir in OPF:
+    if len(OPF)==0:
+        flag=False
         DIR="Results_"+str(name[0])
-        if dir== DIR:
-            print "true",DIR
-            flag=True
+    else:
+        for dir in OPF:
+            DIR="Results_"+str(name[0])
+            if dir== DIR:
+                flag=True
     if flag==True:
         shutil.rmtree(outputfile+"/"+DIR+"/")
         os.makedirs(outputfile+"/"+DIR+"/", mode=0777)        #
@@ -330,7 +335,7 @@ if __name__ == "__main__":
             malist.append(0)
 
     #soft1.plot2(ScoreListe[0], outputfile +"/Results/")
-    soft1.plot2(malist, outputfile +"/"+DIR+"/", "sc")
+    #soft1.plot2(malist, outputfile +"/"+DIR+"/", "sc")
     soft1.plot2(alllist, outputfile +"/"+DIR+"/", "all")
     filein.close()
     fin=time.time()
