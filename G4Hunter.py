@@ -341,7 +341,7 @@ if __name__ == "__main__":
     fin=time.time()
 
     print "\n Results files and Score Figure are created in:   "#,fin-startTime, "secondes"
-    print '\033[1m' + outputfile,"/",DIR,"/","\n "+'\033[0;0m'
+    print '\033[1m' + outputfile,DIR,"/","\n "+'\033[0;0m'
 
 
     Res1file.close()
