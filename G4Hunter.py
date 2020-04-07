@@ -325,7 +325,7 @@ if __name__ == "__main__":
     malist, alllist=[], []
     for jj in range (len(ScoreListe[0])):
         cc, mean=0, 0
-        for kk in range(len(ScoreListe)):
+        for kk in range(len(ScoreListe)-1):
             cc+=ScoreListe[kk][jj]
         mean=cc/len(ScoreListe)
         alllist.append(mean)
