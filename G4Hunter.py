@@ -264,8 +264,7 @@ if __name__ == "__main__":
         inputfile, outputfile , window, score = main(sys.argv[1:])
         fname=inputfile.split("/")[-1]
         name=fname.split(".")
-    #DIR="Results_"+str(name[0])
-    #print DIR
+
     except ValueError:
         print '\033[1m' +"\n \t Oops! invalide parameters  \n" +'\033[0;0m'
         print "--------------------------------------------------------------------\n"
@@ -276,16 +275,12 @@ if __name__ == "__main__":
         sys.exit()
 
     OPF= os.listdir(outputfile)
-
     flag=False
-    if len(OPF)==0:
-        flag=False
+    for dir in OPF:
         DIR="Results_"+str(name[0])
-    else:
-        for dir in OPF:
-            DIR="Results_"+str(name[0])
-            if dir== DIR:
-                flag=True
+        if dir== DIR:
+            print "true",DIR
+            flag=True
     if flag==True:
         shutil.rmtree(outputfile+"/"+DIR+"/")
         os.makedirs(outputfile+"/"+DIR+"/", mode=0777)        #
@@ -321,11 +316,13 @@ if __name__ == "__main__":
         if (len(G4Seq)>0):
             MSCORE=soft1.WriteSeq(DNASeq[i],Res2file,ScoreListe[i], G4Seq, HeaderListe[i], int(window), len(NumListe[i]))
     #plot.append(MSCORE)
-
+    """
     malist, alllist=[], []
+    #print ScoreListe[0]
     for jj in range (len(ScoreListe[0])):
         cc, mean=0, 0
         for kk in range(len(ScoreListe)-1):
+            #print kk, jj, ScoreListe[kk][jj]
             cc+=ScoreListe[kk][jj]
         mean=cc/len(ScoreListe)
         alllist.append(mean)
@@ -335,13 +332,14 @@ if __name__ == "__main__":
             malist.append(0)
 
     #soft1.plot2(ScoreListe[0], outputfile +"/Results/")
-    #soft1.plot2(malist, outputfile +"/"+DIR+"/", "sc")
+    soft1.plot2(malist, outputfile +"/"+DIR+"/", "sc")
     soft1.plot2(alllist, outputfile +"/"+DIR+"/", "all")
+    """
     filein.close()
     fin=time.time()
 
     print "\n Results files and Score Figure are created in:   "#,fin-startTime, "secondes"
-    print '\033[1m' + outputfile,DIR,"/","\n "+'\033[0;0m'
+    print '\033[1m' + outputfile,"/",DIR,"/","\n "+'\033[0;0m'
 
 
     Res1file.close()
